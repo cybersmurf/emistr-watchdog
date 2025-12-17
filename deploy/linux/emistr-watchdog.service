@@ -1,0 +1,44 @@
+[Unit]
+Description=Emistr Watchdog System Monitor
+Documentation=https://github.com/cybersmurf/Emistr.LicenseService
+After=network.target
+
+[Service]
+Type=notify
+User=emistr
+Group=emistr
+WorkingDirectory=/opt/emistr/watchdog
+ExecStart=/opt/emistr/watchdog/Emistr.Watchdog
+Restart=always
+RestartSec=10
+KillSignal=SIGINT
+TimeoutStopSec=30
+SyslogIdentifier=emistr-watchdog
+
+# Environment
+Environment=ASPNETCORE_ENVIRONMENT=Production
+Environment=DOTNET_PRINT_TELEMETRY_MESSAGE=false
+Environment=DOTNET_CLI_TELEMETRY_OPTOUT=1
+
+# Security hardening
+NoNewPrivileges=true
+ProtectSystem=strict
+ProtectHome=true
+PrivateTmp=true
+PrivateDevices=true
+ProtectKernelTunables=true
+ProtectKernelModules=true
+ProtectControlGroups=true
+RestrictSUIDSGID=true
+RestrictNamespaces=true
+
+# Allow write to logs directory
+ReadWritePaths=/opt/emistr/watchdog/logs /var/log/emistr
+
+# Resource limits
+LimitNOFILE=65535
+MemoryMax=256M
+CPUQuota=50%
+
+[Install]
+WantedBy=multi-user.target

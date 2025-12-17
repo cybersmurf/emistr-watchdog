@@ -1,0 +1,99 @@
+/* Emistr Watchdog - Light Theme */
+
+[data-theme="light"] {
+    /* Backgrounds */
+    --bg-primary: #f5f7fa;
+    --bg-secondary: #ffffff;
+    --bg-card: #ffffff;
+    --bg-input: #f0f2f5;
+    
+    /* Text */
+    --text-primary: #1a1a2e;
+    --text-secondary: #6b7280;
+    
+    /* Colors */
+    --accent: #e94560;
+    --accent-hover: #d63650;
+    --info: #0891b2;
+    --success: #059669;
+    --warning: #d97706;
+    --danger: #dc2626;
+    
+    /* Borders */
+    --border-color: rgba(0, 0, 0, 0.1);
+    --border-color-light: rgba(0, 0, 0, 0.05);
+    
+    /* Hover */
+    --hover-bg: rgba(0, 0, 0, 0.05);
+    
+    /* Alert backgrounds */
+    --success-bg: rgba(5, 150, 105, 0.1);
+    --warning-bg: rgba(217, 119, 6, 0.1);
+    --danger-bg: rgba(220, 38, 38, 0.1);
+}
+
+[data-theme="light"] body {
+    background: var(--bg-primary);
+    color: var(--text-primary);
+}
+
+[data-theme="light"] .header {
+    background: var(--bg-secondary);
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+[data-theme="light"] .card {
+    background: var(--bg-card);
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+[data-theme="light"] .header-icon {
+    background: var(--accent);
+    color: white;
+}
+
+[data-theme="light"] input,
+[data-theme="light"] select,
+[data-theme="light"] textarea {
+    background: var(--bg-input);
+    color: var(--text-primary);
+}
+
+[data-theme="light"] .log-container {
+    background: var(--bg-input);
+}
+
+[data-theme="light"] .modal-content {
+    background: var(--bg-card);
+}
+
+/* Light mode scrollbar */
+[data-theme="light"] ::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+}
+
+[data-theme="light"] ::-webkit-scrollbar-track {
+    background: var(--bg-primary);
+}
+
+[data-theme="light"] ::-webkit-scrollbar-thumb {
+    background: rgba(0, 0, 0, 0.2);
+    border-radius: 4px;
+}
+
+[data-theme="light"] ::-webkit-scrollbar-thumb:hover {
+    background: rgba(0, 0, 0, 0.3);
+}
+
+/* Badge adjustments for light mode */
+[data-theme="light"] .badge-success { background: var(--success); color: #fff; }
+[data-theme="light"] .badge-warning { background: var(--warning); color: #fff; }
+[data-theme="light"] .badge-info { background: var(--info); color: #fff; }
+
+/* Button adjustments */
+[data-theme="light"] .btn-secondary {
+    background: var(--bg-input);
+    border-color: var(--border-color);
+}
+

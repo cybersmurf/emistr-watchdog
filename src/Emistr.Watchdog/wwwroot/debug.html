@@ -1,0 +1,368 @@
+<!DOCTYPE html>
+<html lang="cs" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Emistr Watchdog - Debug</title>
+    <link rel="stylesheet" href="/css/common.css">
+    <link rel="stylesheet" href="/css/theme-dark.css">
+    <link rel="stylesheet" href="/css/theme-light.css">
+    <script src="/js/theme.js"></script>
+</head>
+<body>
+    <header class="header">
+        <h1>
+            <div class="header-icon">E</div>
+            Emistr Watchdog - Debug
+        </h1>
+        <nav class="nav-links">
+            <a href="/">Dashboard</a>
+            <a href="/debug.html" class="active">Debug</a>
+            <a href="/settings.html">Settings</a>
+            <div class="theme-switcher">
+                <button class="theme-btn" data-theme="light" onclick="ThemeManager.setTheme('light')" title="Light mode">☀️</button>
+                <button class="theme-btn" data-theme="dark" onclick="ThemeManager.setTheme('dark')" title="Dark mode">🌙</button>
+                <button class="theme-btn" data-theme="auto" onclick="ThemeManager.setTheme('auto')" title="Auto (system)">💻</button>
+            </div>
+        </nav>
+    </header>
+
+    <main class="main">
+        <div class="grid">
+            <!-- System Status -->
+            <div class="card">
+                <div class="card-header">
+                    <span class="card-title">🖥️ System Status</span>
+                    <div class="refresh-indicator" style="display: flex; align-items: center; gap: 0.5rem; color: var(--text-secondary); font-size: 0.875rem;">
+                        <span id="refreshIcon">🔄</span>
+                        <span id="lastUpdate">--</span>
+                    </div>
+                </div>
+                <div class="stat-row">
+                    <span class="stat-label">Total Services</span>
+                    <span class="stat-value" id="totalServices">-</span>
+                </div>
+                <div class="stat-row">
+                    <span class="stat-label">Healthy</span>
+                    <span class="stat-value" id="healthyCount" style="color: var(--success)">-</span>
+                </div>
+                <div class="stat-row">
+                    <span class="stat-label">Unhealthy</span>
+                    <span class="stat-value" id="unhealthyCount" style="color: var(--danger)">-</span>
+                </div>
+                <div class="stat-row">
+                    <span class="stat-label">Critical</span>
+                    <span class="stat-value" id="criticalCount" style="color: var(--danger)">-</span>
+                </div>
+                <div class="actions" style="margin-top: 1rem;">
+                    <button class="btn btn-primary" onclick="refreshAll()">🔄 Refresh All</button>
+                    <button class="btn btn-secondary" onclick="testWebhook()">📨 Test Webhook</button>
+                    <button class="btn btn-secondary" onclick="testEmail()">📧 Test Email</button>
+                </div>
+            </div>
+
+            <!-- SLA Summary -->
+            <div class="card">
+                <div class="card-header">
+                    <span class="card-title">📊 SLA Summary</span>
+                </div>
+                <div class="stat-row">
+                    <span class="stat-label">Uptime Today</span>
+                    <span class="stat-value" id="uptimeToday">-</span>
+                </div>
+                <div class="stat-row">
+                    <span class="stat-label">Uptime Week</span>
+                    <span class="stat-value" id="uptimeWeek">-</span>
+                </div>
+                <div class="stat-row">
+                    <span class="stat-label">Uptime Month</span>
+                    <span class="stat-value" id="uptimeMonth">-</span>
+                </div>
+                <div class="stat-row">
+                    <span class="stat-label">Services Below 99%</span>
+                    <span class="stat-value" id="servicesBelow99">-</span>
+                </div>
+            </div>
+
+            <!-- Maintenance Status -->
+            <div class="card">
+                <div class="card-header">
+                    <span class="card-title">🔧 Maintenance</span>
+                    <span class="badge" id="maintenanceBadge">-</span>
+                </div>
+                <div class="stat-row">
+                    <span class="stat-label">In Maintenance</span>
+                    <span class="stat-value" id="inMaintenance">-</span>
+                </div>
+                <div class="stat-row">
+                    <span class="stat-label">Next Maintenance</span>
+                    <span class="stat-value" id="nextMaintenance">-</span>
+                </div>
+                <div id="maintenanceWindows" style="margin-top: 1rem;"></div>
+            </div>
+
+            <!-- Active Escalations -->
+            <div class="card">
+                <div class="card-header">
+                    <span class="card-title">🚨 Active Escalations</span>
+                    <span class="badge badge-danger" id="escalationCount">0</span>
+                </div>
+                <div id="escalationList">
+                    <p style="color: var(--text-secondary)">No active escalations</p>
+                </div>
+            </div>
+
+            <!-- Recovery History -->
+            <div class="card">
+                <div class="card-header">
+                    <span class="card-title">🔄 Recovery History</span>
+                </div>
+                <div id="recoveryList" class="log-container">
+                    <p style="color: var(--text-secondary)">No recovery attempts</p>
+                </div>
+            </div>
+
+            <!-- Service Details -->
+            <div class="card" style="grid-column: 1 / -1;">
+                <div class="card-header">
+                    <span class="card-title">📋 Service Details</span>
+                </div>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Service</th>
+                            <th>Status</th>
+                            <th>Response Time</th>
+                            <th>Last Check</th>
+                            <th>Failures</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="serviceTable">
+                        <tr><td colspan="6" style="color: var(--text-secondary)">Loading...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Live Log -->
+            <div class="card" style="grid-column: 1 / -1;">
+                <div class="card-header">
+                    <span class="card-title">📜 Live Log</span>
+                    <button class="btn btn-secondary" onclick="clearLog()">Clear</button>
+                </div>
+                <div id="liveLog" class="log-container"></div>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        let logs = [];
+
+        async function fetchData(url) {
+            try {
+                const response = await fetch(url);
+                return await response.json();
+            } catch (e) {
+                addLog('error', `Failed to fetch ${url}: ${e.message}`);
+                return null;
+            }
+        }
+
+        function addLog(level, message) {
+            const time = new Date().toLocaleTimeString();
+            logs.unshift({ time, level, message });
+            if (logs.length > 100) logs.pop();
+            renderLog();
+        }
+
+        function renderLog() {
+            const container = document.getElementById('liveLog');
+            container.innerHTML = logs.map(l => `
+                <div class="log-entry">
+                    <span class="log-time">${l.time}</span>
+                    <span class="log-${l.level}">${l.message}</span>
+                </div>
+            `).join('');
+        }
+
+        function clearLog() {
+            logs = [];
+            renderLog();
+        }
+
+        async function refreshAll() {
+            document.getElementById('refreshIcon').style.animation = 'spin 1s linear infinite';
+            addLog('info', 'Refreshing all data...');
+
+            await Promise.all([
+                loadStatus(),
+                loadSla(),
+                loadMaintenance(),
+                loadEscalations(),
+                loadRecovery()
+            ]);
+
+            document.getElementById('lastUpdate').textContent = new Date().toLocaleTimeString();
+            document.getElementById('refreshIcon').style.animation = '';
+            addLog('success', 'Refresh complete');
+        }
+
+        async function loadStatus() {
+            const data = await fetchData('/api/status');
+            if (!data) return;
+
+            const services = data.services || [];
+            const healthy = services.filter(s => s.status === 'Healthy').length;
+            const unhealthy = services.filter(s => s.status === 'Unhealthy').length;
+            const critical = services.filter(s => s.isCritical).length;
+
+            document.getElementById('totalServices').textContent = services.length;
+            document.getElementById('healthyCount').textContent = healthy;
+            document.getElementById('unhealthyCount').textContent = unhealthy;
+            document.getElementById('criticalCount').textContent = critical;
+
+            const tbody = document.getElementById('serviceTable');
+            tbody.innerHTML = services.map(s => `
+                <tr>
+                    <td>
+                        <span class="status-indicator status-${s.status?.toLowerCase() || 'unknown'}"></span>
+                        ${s.displayName || s.serviceName}
+                    </td>
+                    <td><span class="badge badge-${s.status === 'Healthy' ? 'success' : 'danger'}">${s.status}</span></td>
+                    <td>${s.responseTimeMs ? s.responseTimeMs + ' ms' : '-'}</td>
+                    <td>${s.checkedAt ? new Date(s.checkedAt).toLocaleTimeString() : '-'}</td>
+                    <td>${s.consecutiveFailures || 0}</td>
+                    <td>
+                        <button class="btn btn-secondary" onclick="triggerRecovery('${s.serviceName}')">🔄 Recover</button>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        async function loadSla() {
+            const data = await fetchData('/api/sla');
+            if (!data) return;
+
+            document.getElementById('uptimeToday').textContent = (data.overallUptimeToday || 100) + '%';
+            document.getElementById('uptimeWeek').textContent = (data.overallUptimeWeek || 100) + '%';
+            document.getElementById('uptimeMonth').textContent = (data.overallUptimeMonth || 100) + '%';
+            document.getElementById('servicesBelow99').textContent = data.servicesBelow99Percent || 0;
+        }
+
+        async function loadMaintenance() {
+            const data = await fetchData('/api/maintenance');
+            if (!data) return;
+
+            const badge = document.getElementById('maintenanceBadge');
+            badge.textContent = data.isInMaintenance ? 'ACTIVE' : 'Inactive';
+            badge.className = 'badge ' + (data.isInMaintenance ? 'badge-warning' : 'badge-success');
+
+            document.getElementById('inMaintenance').textContent = data.isInMaintenance ? 'Yes' : 'No';
+            document.getElementById('nextMaintenance').textContent = data.nextMaintenanceStart 
+                ? new Date(data.nextMaintenanceStart).toLocaleString() 
+                : 'Not scheduled';
+
+            const windowsContainer = document.getElementById('maintenanceWindows');
+            if (data.windows && data.windows.length > 0) {
+                windowsContainer.innerHTML = data.windows.map(w => `
+                    <div class="stat-row">
+                        <span class="stat-label">${w.name}</span>
+                        <span class="stat-value">${w.startTime} - ${w.endTime}</span>
+                    </div>
+                `).join('');
+            }
+        }
+
+        async function loadEscalations() {
+            const data = await fetchData('/api/escalations');
+            if (!data) return;
+
+            document.getElementById('escalationCount').textContent = data.activeCount || 0;
+
+            const container = document.getElementById('escalationList');
+            if (data.escalations && data.escalations.length > 0) {
+                container.innerHTML = data.escalations.map(e => `
+                    <div class="stat-row">
+                        <span>
+                            <span class="escalation-level level-${e.currentLevel}">${e.currentLevelName}</span>
+                            ${e.serviceName}
+                        </span>
+                        <span class="stat-value">${Math.round(e.durationSinceFirstFailure / 60000)} min</span>
+                    </div>
+                `).join('');
+            } else {
+                container.innerHTML = '<p style="color: var(--text-secondary)">No active escalations</p>';
+            }
+        }
+
+        async function loadRecovery() {
+            const data = await fetchData('/api/recovery');
+            if (!data) return;
+
+            const container = document.getElementById('recoveryList');
+            if (data.recentAttempts && data.recentAttempts.length > 0) {
+                container.innerHTML = data.recentAttempts.map(r => `
+                    <div class="log-entry">
+                        <span class="log-time">${new Date(r.timestamp).toLocaleString()}</span>
+                        <span class="log-${r.success ? 'success' : 'error'}">
+                            ${r.serviceName}: ${r.actionName} - ${r.success ? 'Success' : 'Failed'}
+                        </span>
+                    </div>
+                `).join('');
+            } else {
+                container.innerHTML = '<p style="color: var(--text-secondary)">No recovery attempts</p>';
+            }
+        }
+
+        async function triggerRecovery(serviceName) {
+            addLog('info', `Triggering recovery for ${serviceName}...`);
+            try {
+                const response = await fetch(`/api/recovery/${serviceName}`, { method: 'POST' });
+                const result = await response.json();
+                if (response.ok) {
+                    addLog('success', `Recovery triggered: ${result.message}`);
+                } else {
+                    addLog('error', `Recovery failed: ${result.error || result.message}`);
+                }
+            } catch (e) {
+                addLog('error', `Recovery error: ${e.message}`);
+            }
+            await loadRecovery();
+        }
+
+        async function testWebhook() {
+            addLog('info', 'Testing webhook...');
+            try {
+                const response = await fetch('/api/test-webhook', { method: 'POST' });
+                const result = await response.json();
+                addLog(result.success ? 'success' : 'error', result.message);
+            } catch (e) {
+                addLog('error', `Webhook test failed: ${e.message}`);
+            }
+        }
+
+        async function testEmail() {
+            addLog('info', 'Testing email...');
+            try {
+                const response = await fetch('/api/test-email', { method: 'POST' });
+                const result = await response.json();
+                addLog(result.success ? 'success' : 'error', result.message);
+            } catch (e) {
+                addLog('error', `Email test failed: ${e.message}`);
+            }
+        }
+
+        // Spin animation
+        const style = document.createElement('style');
+        style.textContent = '@keyframes spin { to { transform: rotate(360deg); } }';
+        document.head.appendChild(style);
+
+        // Initial load
+        refreshAll();
+
+        // Auto-refresh every 30 seconds
+        setInterval(refreshAll, 30000);
+    </script>
+</body>
+</html>
+

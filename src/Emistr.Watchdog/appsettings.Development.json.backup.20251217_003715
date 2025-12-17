@@ -1,0 +1,114 @@
+{
+  "Serilog": {
+    "MinimumLevel": {
+      "Default": "Debug",
+      "Override": {
+        "Microsoft": "Information",
+        "Microsoft.AspNetCore": "Warning",
+        "System": "Information"
+      }
+    }
+  },
+  "Dashboard": {
+    "Title": "Emistr System Monitor [DEV]"
+  },
+  "Watchdog": {
+    "CheckIntervalSeconds": 30,
+    "Services": {
+      "MariaDB": {
+        "Enabled": true,
+        "DisplayName": "MariaDB Database",
+        "ConnectionString": "Server=192.168.222.113;Port=5336;User=pracant;Password=tnacarp;Connection Timeout=5;",
+        "TimeoutSeconds": 10,
+        "CriticalAfterFailures": 3
+      },
+      "LicenseManager": {
+        "Enabled": true,
+        "DisplayName": "License Manager API",
+        "Url": "https://localhost:7115/healthz",
+        "TimeoutSeconds": 10,
+        "ExpectedStatusCodes": [
+          200
+        ],
+        "IgnoreSslErrors": true,
+        "CriticalAfterFailures": 3
+      },
+      "PracantD": {
+        "Enabled": true,
+        "DisplayName": "PracantD Service",
+        "Host": "192.168.225.221",
+        "Port": 54321,
+        "TimeoutSeconds": 5,
+        "RawCommand": "01",
+        "ExpectedResponse": "OK",
+        "CriticalAfterFailures": 3
+      },
+      "BackgroundService": {
+        "Enabled": true,
+        "DisplayName": "Emistr Background Service",
+        "ConnectionString": "Server=192.168.222.113;Port=5336;User=pracant;Password=tnacarp;Connection Timeout=5;",
+        "DatabaseName": "sud_utf8_aaa",
+        "TableName": "system",
+        "ColumnName": "bgs_last_run",
+        "MaxAgeMinutes": 5,
+        "SystemRowId": 1,
+        "TimeoutSeconds": 10,
+        "CriticalAfterFailures": 3
+      },
+      "CustomHttpServices": {
+        "Apache81": {
+          "Enabled": true,
+          "DisplayName": "Apache Web Server 81",
+          "Url": "http://192.168.222.114:81/health.php",
+          "TimeoutSeconds": 10,
+          "ExpectedStatusCodes": [
+            200
+          ],
+          "CriticalAfterFailures": 3
+        },
+        "Apache82": {
+          "Enabled": true,
+          "DisplayName": "Apache Web Server 82",
+          "Url": "http://192.168.222.114:82/health.php",
+          "TimeoutSeconds": 10,
+          "ExpectedStatusCodes": [
+            200
+          ],
+          "CriticalAfterFailures": 3
+        }
+      },
+      "CustomMariaDbServices": {
+        "MariaDB_4311": {
+          "Enabled": true,
+          "DisplayName": "MariaDB Port 4311",
+          "ConnectionString": "Server=192.168.222.113;Port=4311;User=pracant;Password=tnacarp;",
+          "TimeoutSeconds": 10,
+          "CriticalAfterFailures": 3
+        }
+      }
+    },
+    "HttpServices": [
+      {
+        "Name": "apache",
+        "DisplayName": "Apache Web Server",
+        "Enabled": false,
+        "CheckIntervalSeconds": 30,
+        "CriticalAfterFailures": 3,
+        "Url": "http://localhost/health.php",
+        "ExpectedStatusCode": 200,
+        "TimeoutSeconds": 10
+      },
+      {
+        "Name": "license-manager",
+        "DisplayName": "License Manager API",
+        "Enabled": true,
+        "Prioritized": true,
+        "CheckIntervalSeconds": 30,
+        "CriticalAfterFailures": 3,
+        "Url": "https://localhost:7115/healthz",
+        "ExpectedStatusCode": 200,
+        "TimeoutSeconds": 10
+      }
+    ]
+  }
+}

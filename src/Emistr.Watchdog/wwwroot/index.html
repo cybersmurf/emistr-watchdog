@@ -1,0 +1,764 @@
+<!DOCTYPE html>
+<html lang="cs" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Emistr System Monitor</title>
+    <script src="https://unpkg.com/@microsoft/signalr@8.0.0/dist/browser/signalr.min.js"></script>
+    <link rel="stylesheet" href="/css/common.css">
+    <link rel="stylesheet" href="/css/theme-dark.css">
+    <link rel="stylesheet" href="/css/theme-light.css">
+    <script src="/js/theme.js"></script>
+    <style>
+        /* Dashboard specific styles */
+        :root {
+            --critical: #ff0033;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            min-height: 100vh;
+        }
+
+        .header {
+            background: var(--bg-secondary);
+            padding: 1.5rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .header h1 {
+            font-size: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .header-icon {
+            width: 28px;
+            height: 28px;
+            background: var(--accent);
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+        }
+
+        .connection-status {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.875rem;
+        }
+
+        .status-indicator {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: var(--danger);
+        }
+
+        .status-indicator.connected {
+            background: var(--success);
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        .main {
+            padding: 2rem;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .summary-cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .summary-card {
+            background: var(--bg-card);
+            padding: 1.5rem;
+            border-radius: var(--border-radius);
+            text-align: center;
+        }
+
+        .summary-card .value {
+            font-size: 2.5rem;
+            font-weight: bold;
+            margin-bottom: 0.5rem;
+        }
+
+        .summary-card .label {
+            color: var(--text-secondary);
+            font-size: 0.875rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .summary-card.healthy .value { color: var(--success); }
+        .summary-card.unhealthy .value { color: var(--warning); }
+        .summary-card.critical .value { color: var(--critical); }
+        .summary-card.total .value { color: var(--info); }
+
+        .section-title {
+            font-size: 1.25rem;
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .section-icon {
+            width: 24px;
+            height: 24px;
+            background: var(--accent);
+            border-radius: 4px;
+        }
+
+        .services-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 1rem;
+        }
+
+        /* Prioritized services section */
+        .services-prioritized {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+            padding-bottom: 1rem;
+            border-bottom: 2px solid rgba(255,255,255,0.1);
+        }
+
+        .services-prioritized:empty {
+            display: none;
+        }
+
+        .service-card.prioritized {
+            border: 1px solid rgba(255, 215, 0, 0.3);
+        }
+
+        .service-card.prioritized .service-name::before {
+            content: '⭐ ';
+            font-size: 0.8rem;
+        }
+
+        .service-card {
+            background: var(--bg-card);
+            border-radius: var(--border-radius);
+            padding: 1rem;
+            position: relative;
+            overflow: hidden;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .service-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.3);
+        }
+
+        .service-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: var(--text-secondary);
+        }
+
+        .service-card.healthy::before { background: var(--success); }
+        .service-card.degraded::before { background: var(--warning); }
+        .service-card.unhealthy::before { background: var(--danger); }
+        .service-card.critical::before { background: var(--critical); animation: criticalPulse 1s infinite; }
+
+        @keyframes criticalPulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.3; }
+        }
+
+        .service-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 0.5rem;
+        }
+
+        .service-name {
+            font-size: 1rem;
+            font-weight: 600;
+        }
+
+        .service-display-name {
+            color: var(--text-secondary);
+            font-size: 0.75rem;
+        }
+
+        .service-status {
+            padding: 0.2rem 0.6rem;
+            border-radius: 20px;
+            font-size: 0.7rem;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        /* Compact metrics row */
+        .service-metrics-compact {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.5rem 0;
+            font-size: 0.8rem;
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+        }
+
+        .metric-compact {
+            display: flex;
+            align-items: center;
+            gap: 0.3rem;
+        }
+
+        .metric-compact .label {
+            color: var(--text-secondary);
+        }
+
+        .metric-compact .value {
+            font-weight: 600;
+        }
+
+        .metric-compact .value.fast { color: var(--success); }
+        .metric-compact .value.medium { color: var(--warning); }
+        .metric-compact .value.slow { color: var(--danger); }
+
+        /* Expandable details */
+        .service-details-toggle {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.3rem;
+            padding: 0.4rem;
+            margin-top: 0.5rem;
+            background: rgba(255,255,255,0.05);
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+            transition: background 0.2s;
+        }
+
+        .service-details-toggle:hover {
+            background: rgba(255,255,255,0.1);
+        }
+
+        .service-details-toggle .arrow {
+            transition: transform 0.2s;
+        }
+
+        .service-details-toggle.expanded .arrow {
+            transform: rotate(180deg);
+        }
+
+        .service-details {
+            display: none;
+            margin-top: 0.75rem;
+            padding-top: 0.75rem;
+            border-top: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .service-details.show {
+            display: block;
+        }
+
+        .service-status.healthy { background: rgba(0, 210, 106, 0.2); color: var(--success); }
+        .service-status.degraded { background: rgba(255, 184, 48, 0.2); color: var(--warning); }
+        .service-status.unhealthy { background: rgba(255, 71, 87, 0.2); color: var(--danger); }
+        .service-status.critical { background: rgba(255, 0, 51, 0.3); color: var(--critical); }
+        .service-status.unknown { background: rgba(160, 160, 160, 0.2); color: var(--text-secondary); }
+
+        .service-metrics {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 1rem;
+        }
+
+        .metric {
+            background: rgba(0,0,0,0.2);
+            padding: 0.75rem;
+            border-radius: 8px;
+        }
+
+        .metric-label {
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+            margin-bottom: 0.25rem;
+        }
+
+        .metric-value {
+            font-size: 1rem;
+            font-weight: 600;
+        }
+
+        .metric-value.fast { color: var(--success); }
+        .metric-value.medium { color: var(--warning); }
+        .metric-value.slow { color: var(--danger); }
+
+        .status-icon {
+            display: inline-block;
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            text-align: center;
+            line-height: 18px;
+            font-size: 12px;
+            font-weight: bold;
+        }
+
+        .status-icon.ok {
+            background: var(--success);
+            color: white;
+        }
+
+        .status-icon.fail {
+            background: var(--danger);
+            color: white;
+        }
+
+        .error-message {
+            margin-top: 1rem;
+            padding: 0.75rem;
+            background: rgba(255, 71, 87, 0.1);
+            border-radius: 8px;
+            font-size: 0.875rem;
+            color: var(--danger);
+            border-left: 3px solid var(--danger);
+        }
+
+        .error-icon {
+            font-weight: bold;
+            margin-right: 0.5rem;
+        }
+
+        .last-update {
+            text-align: center;
+            color: var(--text-secondary);
+            font-size: 0.875rem;
+            margin-top: 2rem;
+        }
+
+        .alert-banner {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            padding: 1rem;
+            background: var(--critical);
+            color: white;
+            text-align: center;
+            font-weight: 600;
+            z-index: 1000;
+            display: none;
+            animation: slideDown 0.3s ease-out;
+        }
+
+        .alert-banner.show {
+            display: block;
+        }
+
+        @keyframes slideDown {
+            from { transform: translateY(-100%); }
+            to { transform: translateY(0); }
+        }
+
+        .loading {
+            text-align: center;
+            padding: 3rem;
+            color: var(--text-secondary);
+        }
+
+        .loading::after {
+            content: '';
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 2px solid var(--text-secondary);
+            border-top-color: transparent;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-left: 0.5rem;
+            vertical-align: middle;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .response-time-bar {
+            height: 4px;
+            background: rgba(255,255,255,0.1);
+            border-radius: 2px;
+            margin-top: 0.5rem;
+            overflow: hidden;
+        }
+
+        .response-time-fill {
+            height: 100%;
+            border-radius: 2px;
+            transition: width 0.3s ease;
+        }
+
+        .service-info {
+            margin-top: 0.75rem;
+            padding: 0.5rem 0.75rem;
+            background: rgba(233, 69, 96, 0.1);
+            border-radius: 6px;
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+        }
+
+        .service-info-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 0.15rem 0;
+        }
+
+        .service-info-label {
+            color: var(--text-secondary);
+        }
+
+        .service-info-value {
+            color: var(--text-primary);
+            font-family: 'Consolas', 'Monaco', monospace;
+        }
+
+        @media (max-width: 768px) {
+            .header {
+                flex-direction: column;
+                gap: 1rem;
+                text-align: center;
+            }
+
+            .main {
+                padding: 1rem;
+            }
+
+            .services-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div id="alert-banner" class="alert-banner"></div>
+
+    <header class="header">
+        <h1><span class="header-icon">W</span> Emistr System Monitor</h1>
+        <nav class="nav-links">
+            <a href="/" class="active">Dashboard</a>
+            <a href="/debug.html">Debug</a>
+            <a href="/settings.html">Settings</a>
+            <div class="theme-switcher">
+                <button class="theme-btn" data-theme="light" onclick="ThemeManager.setTheme('light')" title="Light mode">☀️</button>
+                <button class="theme-btn" data-theme="dark" onclick="ThemeManager.setTheme('dark')" title="Dark mode">🌙</button>
+                <button class="theme-btn" data-theme="auto" onclick="ThemeManager.setTheme('auto')" title="Auto (system)">💻</button>
+            </div>
+            <div class="connection-status">
+                <div id="status-indicator" class="status-indicator"></div>
+                <span id="connection-text">Connecting...</span>
+            </div>
+        </nav>
+    </header>
+
+    <main class="main">
+        <div id="loading" class="loading">Loading services...</div>
+
+        <div id="content" style="display: none;">
+            <div class="summary-cards">
+                <div class="summary-card total">
+                    <div class="value" id="total-count">0</div>
+                    <div class="label">Total Services</div>
+                </div>
+                <div class="summary-card healthy">
+                    <div class="value" id="healthy-count">0</div>
+                    <div class="label">Healthy</div>
+                </div>
+                <div class="summary-card unhealthy">
+                    <div class="value" id="unhealthy-count">0</div>
+                    <div class="label">Unhealthy</div>
+                </div>
+                <div class="summary-card critical">
+                    <div class="value" id="critical-count">0</div>
+                    <div class="label">Critical</div>
+                </div>
+            </div>
+
+            <h2 class="section-title"><span class="section-icon"></span> Services</h2>
+            <div id="services-prioritized" class="services-prioritized"></div>
+            <div id="services-grid" class="services-grid"></div>
+
+
+            <div class="last-update">
+                Last updated: <span id="last-update">-</span>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        const connection = new signalR.HubConnectionBuilder()
+            .withUrl("/hub/dashboard")
+            .withAutomaticReconnect([0, 2000, 5000, 10000, 30000])
+            .build();
+
+        let lastStatus = null;
+
+        // Connection state handlers
+        connection.onreconnecting(() => {
+            updateConnectionStatus(false, 'Reconnecting...');
+        });
+
+        connection.onreconnected(() => {
+            updateConnectionStatus(true, 'Connected');
+            fetchStatus();
+        });
+
+        connection.onclose(() => {
+            updateConnectionStatus(false, 'Disconnected');
+        });
+
+        // Message handlers
+        connection.on("StatusUpdate", (status) => {
+            updateDashboard(status);
+        });
+
+        connection.on("ServiceAlert", (service) => {
+            showAlert(service);
+        });
+
+        function updateConnectionStatus(connected, text) {
+            const indicator = document.getElementById('status-indicator');
+            const textEl = document.getElementById('connection-text');
+            
+            indicator.classList.toggle('connected', connected);
+            textEl.textContent = text;
+        }
+
+        function updateDashboard(status) {
+            lastStatus = status;
+            
+            document.getElementById('loading').style.display = 'none';
+            document.getElementById('content').style.display = 'block';
+
+            // Update summary
+            document.getElementById('total-count').textContent = status.services.length;
+            document.getElementById('healthy-count').textContent = status.healthyCount;
+            document.getElementById('unhealthy-count').textContent = status.unhealthyCount;
+            document.getElementById('critical-count').textContent = status.criticalCount;
+
+            // Split services into prioritized and regular
+            const prioritized = status.services.filter(s => s.isPrioritized || s.prioritized);
+            const regular = status.services.filter(s => !s.isPrioritized && !s.prioritized);
+
+            // Update prioritized services
+            const prioritizedGrid = document.getElementById('services-prioritized');
+            prioritizedGrid.innerHTML = prioritized.map(s => createServiceCard(s, true)).join('');
+
+            // Update regular services grid
+            const grid = document.getElementById('services-grid');
+            grid.innerHTML = regular.map(s => createServiceCard(s, false)).join('');
+
+            // Update timestamp
+            document.getElementById('last-update').textContent = 
+                new Date(status.timestamp).toLocaleString('cs-CZ');
+        }
+
+        function createServiceCard(service, isPrioritized = false) {
+            const statusClass = service.status.toLowerCase();
+            const prioritizedClass = isPrioritized ? ' prioritized' : '';
+            const responseTime = service.responseTimeMs !== null ? service.responseTimeMs + ' ms' : '-';
+            const responseClass = getResponseTimeClass(service.responseTimeMs);
+            const lastCheck = service.lastCheckAt 
+                ? new Date(service.lastCheckAt).toLocaleTimeString('cs-CZ')
+                : '-';
+
+            const statusIcon = service.isHealthy 
+                ? '<span class="status-icon ok">✓</span>'
+                : '<span class="status-icon fail">✗</span>';
+
+            // Error message (always visible if present)
+            let errorHtml = '';
+            if (service.errorMessage) {
+                errorHtml = '<div class="error-message"><span class="error-icon">!</span> ' + escapeHtml(service.errorMessage) + '</div>';
+            }
+
+            // Server info for expandable section
+            let serverInfoHtml = '';
+            if (service.serverInfo) {
+                const info = service.serverInfo;
+                let rows = '';
+
+                if (info.version) {
+                    rows += '<div class="service-info-row"><span class="service-info-label">Version:</span><span class="service-info-value">' + escapeHtml(info.version) + '</span></div>';
+                }
+                if (info.platform) {
+                    rows += '<div class="service-info-row"><span class="service-info-label">Platform:</span><span class="service-info-value">' + escapeHtml(info.platform) + '</span></div>';
+                }
+                if (info.architecture) {
+                    rows += '<div class="service-info-row"><span class="service-info-label">Architecture:</span><span class="service-info-value">' + escapeHtml(info.architecture) + '</span></div>';
+                }
+                if (info.additionalInfo) {
+                    for (const [key, value] of Object.entries(info.additionalInfo)) {
+                        rows += '<div class="service-info-row"><span class="service-info-label">' + escapeHtml(key) + ':</span><span class="service-info-value">' + escapeHtml(value) + '</span></div>';
+                    }
+                }
+
+                if (rows) {
+                    serverInfoHtml = '<div class="service-info">' + rows + '</div>';
+                }
+            }
+
+            // Has details to show?
+            const hasDetails = serverInfoHtml || service.consecutiveFailures > 0;
+            const cardId = 'card-' + service.serviceName.replace(/[^a-zA-Z0-9]/g, '-');
+
+            let detailsToggle = '';
+            let detailsSection = '';
+            
+            if (hasDetails) {
+                detailsToggle = '<div class="service-details-toggle" onclick="toggleDetails(\'' + cardId + '\')">' +
+                    '<span>Details</span><span class="arrow">▼</span></div>';
+                
+                detailsSection = '<div id="' + cardId + '" class="service-details">' +
+                    '<div class="service-info-row"><span class="service-info-label">Consecutive Failures:</span><span class="service-info-value">' + service.consecutiveFailures + '</span></div>' +
+                    serverInfoHtml +
+                '</div>';
+            }
+
+            return '<div class="service-card ' + statusClass + prioritizedClass + '">' +
+                '<div class="service-header">' +
+                    '<div>' +
+                        '<div class="service-name">' + escapeHtml(service.serviceName) + '</div>' +
+                        '<div class="service-display-name">' + escapeHtml(service.displayName) + '</div>' +
+                    '</div>' +
+                    '<span class="service-status ' + statusClass + '">' + service.status + '</span>' +
+                '</div>' +
+                '<div class="service-metrics-compact">' +
+                    '<div class="metric-compact">' +
+                        '<span class="label">Response:</span>' +
+                        '<span class="value ' + responseClass + '">' + responseTime + '</span>' +
+                    '</div>' +
+                    '<div class="metric-compact">' +
+                        '<span class="label">Check:</span>' +
+                        '<span class="value">' + lastCheck + '</span>' +
+                    '</div>' +
+                    statusIcon +
+                '</div>' +
+                errorHtml +
+                detailsToggle +
+                detailsSection +
+            '</div>';
+        }
+
+        function toggleDetails(cardId) {
+            const details = document.getElementById(cardId);
+            const toggle = details.previousElementSibling;
+            
+            if (details.classList.contains('show')) {
+                details.classList.remove('show');
+                toggle.classList.remove('expanded');
+            } else {
+                details.classList.add('show');
+                toggle.classList.add('expanded');
+            }
+        }
+
+
+        function getResponseTimeClass(ms) {
+            if (ms === null) return '';
+            if (ms < 100) return 'fast';
+            if (ms < 500) return 'medium';
+            return 'slow';
+        }
+
+        function showAlert(service) {
+            const banner = document.getElementById('alert-banner');
+            banner.textContent = 'ALERT: ' + service.displayName + ' is ' + service.status + '!';
+            banner.classList.add('show');
+
+            setTimeout(() => {
+                banner.classList.remove('show');
+            }, 10000);
+
+            // Play sound for critical alerts
+            if (service.isCritical) {
+                playAlertSound();
+            }
+        }
+
+        function playAlertSound() {
+            try {
+                const audio = new Audio('data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQoGAACBhYqFbF1fdJivrJBhNjVgodDbq2EcBj+a2teleSwJNHrO5v+/gi8GLWXE');
+                audio.volume = 0.5;
+                audio.play().catch(function() {});
+            } catch(e) {}
+        }
+
+        function escapeHtml(text) {
+            if (!text) return '';
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        async function fetchStatus() {
+            try {
+                const response = await fetch('/api/status');
+                const status = await response.json();
+                updateDashboard(status);
+            } catch (error) {
+                console.error('Failed to fetch status:', error);
+            }
+        }
+
+        // Start connection
+        async function start() {
+            try {
+                await connection.start();
+                updateConnectionStatus(true, 'Connected');
+                await fetchStatus();
+            } catch (err) {
+                console.error('SignalR connection failed:', err);
+                updateConnectionStatus(false, 'Connection failed');
+                // Fallback to polling
+                setInterval(fetchStatus, 5000);
+                fetchStatus();
+            }
+        }
+
+        start();
+
+        // Periodic refresh as backup
+        setInterval(function() {
+            if (connection.state !== signalR.HubConnectionState.Connected) {
+                fetchStatus();
+            }
+        }, 30000);
+    </script>
+</body>
+</html>

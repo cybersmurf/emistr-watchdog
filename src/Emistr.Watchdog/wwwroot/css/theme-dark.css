@@ -1,0 +1,66 @@
+/* Emistr Watchdog - Dark Theme */
+
+:root, [data-theme="dark"] {
+    /* Backgrounds */
+    --bg-primary: #1a1a2e;
+    --bg-secondary: #16213e;
+    --bg-card: #0f3460;
+    --bg-input: #1a2744;
+    
+    /* Text */
+    --text-primary: #eaeaea;
+    --text-secondary: #a0a0a0;
+    
+    /* Colors */
+    --accent: #e94560;
+    --accent-hover: #d63650;
+    --info: #00b4d8;
+    --success: #00d26a;
+    --warning: #ffb830;
+    --danger: #ff4757;
+    
+    /* Borders */
+    --border-color: rgba(255, 255, 255, 0.1);
+    --border-color-light: rgba(255, 255, 255, 0.05);
+    
+    /* Hover */
+    --hover-bg: rgba(255, 255, 255, 0.1);
+    
+    /* Alert backgrounds */
+    --success-bg: rgba(0, 210, 106, 0.2);
+    --warning-bg: rgba(255, 184, 48, 0.2);
+    --danger-bg: rgba(255, 71, 87, 0.2);
+}
+
+[data-theme="dark"] body {
+    background: var(--bg-primary);
+    color: var(--text-primary);
+}
+
+[data-theme="dark"] .header {
+    background: var(--bg-secondary);
+}
+
+[data-theme="dark"] .card {
+    background: var(--bg-card);
+}
+
+/* Dark mode scrollbar */
+[data-theme="dark"] ::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+}
+
+[data-theme="dark"] ::-webkit-scrollbar-track {
+    background: var(--bg-primary);
+}
+
+[data-theme="dark"] ::-webkit-scrollbar-thumb {
+    background: var(--border-color);
+    border-radius: 4px;
+}
+
+[data-theme="dark"] ::-webkit-scrollbar-thumb:hover {
+    background: rgba(255, 255, 255, 0.2);
+}
+

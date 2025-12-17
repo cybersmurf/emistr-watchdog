@@ -1,0 +1,1300 @@
+<!DOCTYPE html>
+<html lang="cs" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Emistr Watchdog - Settings</title>
+    <link rel="stylesheet" href="/css/common.css">
+    <link rel="stylesheet" href="/css/theme-dark.css">
+    <link rel="stylesheet" href="/css/theme-light.css">
+    <link rel="stylesheet" href="/css/settings.css">
+    <script src="/js/theme.js"></script>
+    <style>
+        /* Page-specific overrides - can be customized */
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            min-height: 100vh;
+        }
+
+        /* Login Overlay */
+        .login-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: var(--bg-primary);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+        }
+
+        .login-overlay.hidden {
+            display: none;
+        }
+
+        .login-box {
+            background: var(--bg-card);
+            padding: 3rem;
+            border-radius: var(--border-radius);
+            text-align: center;
+            max-width: 400px;
+            width: 90%;
+        }
+
+        .login-box h2 {
+            margin-bottom: 0.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+        }
+
+        .login-box p {
+            color: var(--text-secondary);
+            margin-bottom: 2rem;
+        }
+
+        .login-box .lock-icon {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+        }
+
+        .login-box input {
+            width: 100%;
+            padding: 1rem;
+            background: var(--bg-input);
+            border: 2px solid rgba(255,255,255,0.1);
+            border-radius: 8px;
+            color: var(--text-primary);
+            font-size: 1.5rem;
+            text-align: center;
+            letter-spacing: 0.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .login-box input:focus {
+            outline: none;
+            border-color: var(--accent);
+        }
+
+        .login-box input::placeholder {
+            letter-spacing: normal;
+            font-size: 1rem;
+        }
+
+        .login-box button {
+            width: 100%;
+            padding: 1rem;
+            background: var(--accent);
+            border: none;
+            border-radius: 8px;
+            color: white;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .login-box button:hover {
+            background: #d63650;
+        }
+
+        .login-error {
+            color: var(--danger);
+            margin-top: 1rem;
+            display: none;
+        }
+
+        .login-error.show {
+            display: block;
+        }
+
+        .header {
+            background: var(--bg-secondary);
+            padding: 1.5rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .header h1 {
+            font-size: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .header-icon {
+            width: 28px;
+            height: 28px;
+            background: var(--accent);
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 1rem;
+        }
+
+        .nav-links a {
+            color: var(--text-secondary);
+            text-decoration: none;
+            padding: 0.5rem 1rem;
+            border-radius: 6px;
+            transition: all 0.2s;
+        }
+
+        .nav-links a:hover, .nav-links a.active {
+            color: var(--text-primary);
+            background: rgba(255,255,255,0.1);
+        }
+
+        .main {
+            padding: 2rem;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .tabs {
+            display: flex;
+            gap: 0.5rem;
+            margin-bottom: 2rem;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+            padding-bottom: 1rem;
+        }
+
+        .tab {
+            padding: 0.75rem 1.5rem;
+            background: transparent;
+            border: none;
+            color: var(--text-secondary);
+            cursor: pointer;
+            border-radius: 6px 6px 0 0;
+            transition: all 0.2s;
+            font-size: 1rem;
+        }
+
+        .tab:hover {
+            color: var(--text-primary);
+            background: rgba(255,255,255,0.05);
+        }
+
+        .tab.active {
+            color: var(--text-primary);
+            background: var(--bg-card);
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .card {
+            background: var(--bg-card);
+            border-radius: var(--border-radius);
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+        }
+
+        .card-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+        }
+
+        .form-group {
+            margin-bottom: 1.25rem;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            color: var(--text-secondary);
+            font-size: 0.875rem;
+        }
+
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            width: 100%;
+            padding: 0.75rem 1rem;
+            background: var(--bg-input);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 8px;
+            color: var(--text-primary);
+            font-size: 1rem;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: var(--accent);
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+        }
+
+        .btn {
+            padding: 0.75rem 1.5rem;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: 500;
+            transition: all 0.2s;
+        }
+
+        .btn-primary {
+            background: var(--accent);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #d63650;
+        }
+
+        .btn-secondary {
+            background: rgba(255,255,255,0.1);
+            color: var(--text-primary);
+        }
+
+        .btn-secondary:hover {
+            background: rgba(255,255,255,0.2);
+        }
+
+        .btn-success {
+            background: var(--success);
+            color: white;
+        }
+
+        .btn-danger {
+            background: var(--danger);
+            color: white;
+        }
+
+        .btn-sm {
+            padding: 0.5rem 1rem;
+            font-size: 0.875rem;
+        }
+
+        .service-list {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .service-item {
+            background: var(--bg-input);
+            border-radius: 8px;
+            padding: 1rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .service-info {
+            flex: 1;
+        }
+
+        .service-name {
+            font-weight: 600;
+            margin-bottom: 0.25rem;
+        }
+
+        .service-type {
+            color: var(--text-secondary);
+            font-size: 0.875rem;
+        }
+
+        .service-status {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .status-badge {
+            padding: 0.25rem 0.75rem;
+            border-radius: 4px;
+            font-size: 0.75rem;
+            font-weight: 500;
+        }
+
+        .status-badge.enabled {
+            background: rgba(0, 210, 106, 0.2);
+            color: var(--success);
+        }
+
+        .status-badge.disabled {
+            background: rgba(255, 71, 87, 0.2);
+            color: var(--danger);
+        }
+
+        .service-actions {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.7);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal.show {
+            display: flex;
+        }
+
+        .modal-content {
+            background: var(--bg-card);
+            border-radius: var(--border-radius);
+            padding: 2rem;
+            width: 90%;
+            max-width: 600px;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+        }
+
+        .modal-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+        }
+
+        .modal-close {
+            background: none;
+            border: none;
+            color: var(--text-secondary);
+            font-size: 1.5rem;
+            cursor: pointer;
+        }
+
+        .modal-footer {
+            display: flex;
+            justify-content: flex-end;
+            gap: 1rem;
+            margin-top: 1.5rem;
+        }
+
+        .alert {
+            padding: 1rem;
+            border-radius: 8px;
+            margin-bottom: 1rem;
+        }
+
+        .alert-success {
+            background: rgba(0, 210, 106, 0.2);
+            border: 1px solid var(--success);
+            color: var(--success);
+        }
+
+        .alert-warning {
+            background: rgba(255, 184, 48, 0.2);
+            border: 1px solid var(--warning);
+            color: var(--warning);
+        }
+
+        .alert-danger {
+            background: rgba(255, 71, 87, 0.2);
+            border: 1px solid var(--danger);
+            color: var(--danger);
+        }
+
+        .toggle-switch {
+            position: relative;
+            width: 50px;
+            height: 26px;
+        }
+
+        .toggle-switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .toggle-slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(255,255,255,0.1);
+            transition: 0.3s;
+            border-radius: 26px;
+        }
+
+        .toggle-slider:before {
+            position: absolute;
+            content: "";
+            height: 20px;
+            width: 20px;
+            left: 3px;
+            bottom: 3px;
+            background-color: white;
+            transition: 0.3s;
+            border-radius: 50%;
+        }
+
+        input:checked + .toggle-slider {
+            background-color: var(--success);
+        }
+
+        input:checked + .toggle-slider:before {
+            transform: translateX(24px);
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        #globalAlert {
+            position: fixed;
+            top: 80px;
+            right: 20px;
+            z-index: 1001;
+            min-width: 300px;
+        }
+
+        .app-content {
+            display: none;
+        }
+
+        .app-content.authenticated {
+            display: block;
+        }
+
+        .logout-btn {
+            background: transparent;
+            border: 1px solid var(--danger);
+            color: var(--danger);
+            padding: 0.5rem 1rem;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.875rem;
+            transition: all 0.2s;
+        }
+
+        .logout-btn:hover {
+            background: var(--danger);
+            color: white;
+        }
+    </style>
+</head>
+<body>
+    <!-- Login Overlay -->
+    <div id="loginOverlay" class="login-overlay">
+        <div class="login-box">
+            <div class="lock-icon">🔒</div>
+            <h2>Settings Access</h2>
+            <p>Zadejte přístupový kód pro správu nastavení</p>
+            <input type="password" id="accessCode" placeholder="Přístupový kód" maxlength="10" autocomplete="off">
+            <button onclick="checkAccess()">Vstoupit</button>
+            <p id="loginError" class="login-error">Nesprávný přístupový kód</p>
+        </div>
+    </div>
+
+    <div id="appContent" class="app-content">
+        <header class="header">
+            <h1>
+                <div class="header-icon">E</div>
+                Emistr Watchdog - Settings
+            </h1>
+            <nav class="nav-links">
+                <a href="/">Dashboard</a>
+                <a href="/debug.html">Debug</a>
+                <a href="/settings.html" class="active">Settings</a>
+                <div class="theme-switcher">
+                    <button class="theme-btn" data-theme="light" onclick="ThemeManager.setTheme('light')" title="Light mode">☀️</button>
+                    <button class="theme-btn" data-theme="dark" onclick="ThemeManager.setTheme('dark')" title="Dark mode">🌙</button>
+                    <button class="theme-btn" data-theme="auto" onclick="ThemeManager.setTheme('auto')" title="Auto (system)">💻</button>
+                </div>
+                <button class="logout-btn" onclick="logout()">Odhlásit</button>
+            </nav>
+        </header>
+
+        <div id="globalAlert" class="hidden"></div>
+
+        <main class="main">
+            <div class="tabs">
+                <button class="tab active" data-tab="services">Services</button>
+                <button class="tab" data-tab="notifications">Notifications</button>
+                <button class="tab" data-tab="general">General</button>
+                <button class="tab" data-tab="export">Export/Import</button>
+            </div>
+
+        <!-- Services Tab -->
+        <div id="services" class="tab-content active">
+            <div class="card">
+                <div class="card-header">
+                    <h2 class="card-title">Monitored Services</h2>
+                    <button class="btn btn-primary" onclick="openAddServiceModal()">+ Add Service</button>
+                </div>
+                <div id="serviceList" class="service-list">
+                    <!-- Services will be loaded here -->
+                </div>
+            </div>
+        </div>
+
+        <!-- Notifications Tab -->
+        <div id="notifications" class="tab-content">
+            <div class="card">
+                <h2 class="card-title" style="margin-bottom: 1.5rem;">Email Notifications</h2>
+                <div class="form-group">
+                    <label>
+                        <label class="toggle-switch">
+                            <input type="checkbox" id="emailEnabled">
+                            <span class="toggle-slider"></span>
+                        </label>
+                        Enable Email Notifications
+                    </label>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="emailTo">Recipients (comma separated)</label>
+                        <input type="text" id="emailTo" placeholder="admin@example.com, alerts@example.com">
+                    </div>
+                    <div class="form-group">
+                        <label for="emailSubjectPrefix">Subject Prefix</label>
+                        <input type="text" id="emailSubjectPrefix" value="[Watchdog]">
+                    </div>
+                </div>
+            </div>
+
+            <div class="card">
+                <h2 class="card-title" style="margin-bottom: 1.5rem;">Webhook Notifications</h2>
+                <div class="form-group">
+                    <label>
+                        <label class="toggle-switch">
+                            <input type="checkbox" id="webhookEnabled">
+                            <span class="toggle-slider"></span>
+                        </label>
+                        Enable Webhook Notifications
+                    </label>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="webhookUrl">Webhook URL</label>
+                        <input type="url" id="webhookUrl" placeholder="https://hooks.slack.com/services/...">
+                    </div>
+                    <div class="form-group">
+                        <label for="webhookType">Webhook Type</label>
+                        <select id="webhookType">
+                            <option value="Generic">Generic JSON</option>
+                            <option value="Slack">Slack</option>
+                            <option value="Teams">Microsoft Teams</option>
+                            <option value="Discord">Discord</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <button class="btn btn-primary" onclick="saveNotifications()">Save Notifications</button>
+        </div>
+
+        <!-- General Tab -->
+        <div id="general" class="tab-content">
+            <div class="card">
+                <h2 class="card-title" style="margin-bottom: 1.5rem;">General Settings</h2>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="defaultCheckInterval">Default Check Interval (seconds)</label>
+                        <input type="number" id="defaultCheckInterval" min="5" max="300" value="30">
+                    </div>
+                    <div class="form-group">
+                        <label for="defaultCriticalAfter">Critical After Failures</label>
+                        <input type="number" id="defaultCriticalAfter" min="1" max="10" value="3">
+                    </div>
+                    <div class="form-group">
+                        <label for="historyRetention">History Retention (days)</label>
+                        <input type="number" id="historyRetention" min="1" max="90" value="7">
+                    </div>
+                </div>
+            </div>
+            <button class="btn btn-primary" onclick="saveGeneralSettings()">Save Settings</button>
+        </div>
+
+        <!-- Export/Import Tab -->
+        <div id="export" class="tab-content">
+            <div class="card">
+                <h2 class="card-title" style="margin-bottom: 1.5rem;">Export Configuration</h2>
+                <p style="color: var(--text-secondary); margin-bottom: 1rem;">
+                    Download the current configuration as a JSON file.
+                </p>
+                <button class="btn btn-secondary" onclick="exportConfig()">Export Configuration</button>
+            </div>
+
+            <div class="card">
+                <h2 class="card-title" style="margin-bottom: 1.5rem;">Import Configuration</h2>
+                <p style="color: var(--text-secondary); margin-bottom: 1rem;">
+                    Upload a configuration file. This will replace the current configuration.
+                </p>
+                <div class="form-group">
+                    <input type="file" id="importFile" accept=".json">
+                </div>
+                <button class="btn btn-warning" onclick="importConfig()">Import Configuration</button>
+            </div>
+        </div>
+    </main>
+
+    <!-- Add/Edit Service Modal -->
+    <div id="serviceModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title" id="modalTitle">Add Service</h2>
+                <button class="modal-close" onclick="closeModal()">&times;</button>
+            </div>
+            <form id="serviceForm">
+                <input type="hidden" id="editingService">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="serviceName">Service Name *</label>
+                        <input type="text" id="serviceName" required placeholder="my-service">
+                    </div>
+                    <div class="form-group">
+                        <label for="displayName">Display Name</label>
+                        <input type="text" id="displayName" placeholder="My Service">
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="serviceType">Service Type *</label>
+                        <select id="serviceType" onchange="updateServiceFields()">
+                            <option value="HTTP">HTTP Endpoint</option>
+                            <option value="MariaDB">MariaDB Database</option>
+                            <option value="Telnet">TCP/Telnet Port</option>
+                            <option value="Ping">ICMP Ping</option>
+                            <option value="BackgroundService">Windows Service</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="serviceEnabled">Enabled</label>
+                        <label class="toggle-switch">
+                            <input type="checkbox" id="serviceEnabled" checked>
+                            <span class="toggle-slider"></span>
+                        </label>
+                    </div>
+                    <div class="form-group">
+                        <label for="servicePrioritized">⭐ Prioritized (show at top)</label>
+                        <label class="toggle-switch">
+                            <input type="checkbox" id="servicePrioritized">
+                            <span class="toggle-slider"></span>
+                        </label>
+                    </div>
+                </div>
+
+                <!-- HTTP Fields -->
+                <div id="httpFields" class="service-type-fields">
+                    <div class="form-group">
+                        <label for="httpUrl">URL *</label>
+                        <input type="url" id="httpUrl" placeholder="https://api.example.com/health">
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="httpExpectedStatus">Expected Status Code</label>
+                            <input type="number" id="httpExpectedStatus" value="200">
+                        </div>
+                        <div class="form-group">
+                            <label for="httpTimeout">Timeout (seconds)</label>
+                            <input type="number" id="httpTimeout" value="10">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- MariaDB Fields -->
+                <div id="mariadbFields" class="service-type-fields hidden">
+                    <div class="form-group">
+                        <label for="dbConnectionString">Connection String *</label>
+                        <input type="text" id="dbConnectionString" placeholder="Server=localhost;Database=mydb;User=root;Password=xxx;">
+                    </div>
+                </div>
+
+                <!-- Telnet Fields -->
+                <div id="telnetFields" class="service-type-fields hidden">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="telnetHost">Host *</label>
+                            <input type="text" id="telnetHost" placeholder="192.168.1.100">
+                        </div>
+                        <div class="form-group">
+                            <label for="telnetPort">Port *</label>
+                            <input type="number" id="telnetPort" value="80">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="telnetTimeout">Timeout (seconds)</label>
+                        <input type="number" id="telnetTimeout" value="5">
+                    </div>
+                </div>
+
+                <!-- Ping Fields -->
+                <div id="pingFields" class="service-type-fields hidden">
+                    <div class="form-group">
+                        <label for="pingHost">Host *</label>
+                        <input type="text" id="pingHost" placeholder="192.168.1.1 or google.com">
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="pingTimeout">Timeout (ms)</label>
+                            <input type="number" id="pingTimeout" value="1000">
+                        </div>
+                        <div class="form-group">
+                            <label for="pingCount">Ping Count</label>
+                            <input type="number" id="pingCount" value="3">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Background Service Fields -->
+                <div id="bgServiceFields" class="service-type-fields hidden">
+                    <div class="form-group">
+                        <label for="bgServiceName">Windows Service Name *</label>
+                        <input type="text" id="bgServiceName" placeholder="MyWindowsService">
+                    </div>
+                </div>
+
+                <!-- Common Fields -->
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="checkInterval">Check Interval (seconds)</label>
+                        <input type="number" id="checkInterval" value="30" min="5">
+                    </div>
+                    <div class="form-group">
+                        <label for="criticalAfter">Critical After Failures</label>
+                        <input type="number" id="criticalAfter" value="3" min="1">
+                    </div>
+                </div>
+            </form>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="closeModal()">Cancel</button>
+                <button class="btn btn-primary" onclick="saveService()">Save Service</button>
+            </div>
+        </div>
+    </div>
+    </div> <!-- End of app-content -->
+
+    <script>
+        // Tab switching
+        document.querySelectorAll('.tab').forEach(tab => {
+            tab.addEventListener('click', () => {
+                document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+                document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+                tab.classList.add('active');
+                document.getElementById(tab.dataset.tab).classList.add('active');
+            });
+        });
+
+        // Load data on page load
+        document.addEventListener('DOMContentLoaded', () => {
+            loadServices();
+            loadNotifications();
+            loadGeneralSettings();
+        });
+
+        // Show alert
+        function showAlert(message, type = 'success') {
+            const alertDiv = document.getElementById('globalAlert');
+            alertDiv.className = `alert alert-${type}`;
+            alertDiv.textContent = message;
+            alertDiv.classList.remove('hidden');
+            setTimeout(() => alertDiv.classList.add('hidden'), 5000);
+        }
+
+        // API base URL - V2
+        const API_BASE = '/api/v2/config';
+
+        // Load services
+        async function loadServices() {
+            try {
+                const response = await fetch(`${API_BASE}/services`);
+                const services = await response.json();
+                renderServices(services);
+            } catch (error) {
+                showAlert('Failed to load services: ' + error.message, 'danger');
+            }
+        }
+
+        function renderServices(services) {
+            const list = document.getElementById('serviceList');
+            if (services.length === 0) {
+                list.innerHTML = '<p style="color: var(--text-secondary); text-align: center; padding: 2rem;">No services configured. Click "Add Service" to get started.</p>';
+                return;
+            }
+
+            list.innerHTML = services.map(s => `
+                <div class="service-item ${s.prioritized ? 'prioritized' : ''}" data-service="${s.name}">
+                    <div class="service-info">
+                        <div class="service-name">${s.prioritized ? '⭐ ' : ''}${s.displayName || s.name}</div>
+                        <div class="service-type">${s.type} • ${s.name}</div>
+                    </div>
+                    <div class="service-status">
+                        <span class="status-badge ${s.enabled ? 'enabled' : 'disabled'}">
+                            ${s.enabled ? 'Enabled' : 'Disabled'}
+                        </span>
+                    </div>
+                    <div class="service-actions">
+                        <button class="btn ${s.prioritized ? 'btn-warning' : 'btn-secondary'} btn-sm" 
+                                onclick="togglePriority('${s.name}', ${!s.prioritized})" 
+                                title="${s.prioritized ? 'Remove priority' : 'Set as priority'}">
+                            ${s.prioritized ? '⭐' : '☆'}
+                        </button>
+                        <button class="btn btn-secondary btn-sm" onclick="editService('${s.name}')">Edit</button>
+                        <button class="btn btn-danger btn-sm" onclick="deleteService('${s.name}')">Delete</button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // Toggle priority without restart
+        async function togglePriority(serviceName, prioritized) {
+            try {
+                const response = await fetch(`${API_BASE}/services/${encodeURIComponent(serviceName)}/priority`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ prioritized: prioritized })
+                });
+                
+                const result = await response.json();
+                
+                if (response.ok) {
+                    showAlert(result.message, 'success');
+                    loadServices(); // Refresh list
+                } else {
+                    showAlert(result.error || 'Failed to update priority', 'danger');
+                }
+            } catch (error) {
+                showAlert('Failed to update priority: ' + error.message, 'danger');
+            }
+        }
+
+        // Service type field switching
+        function updateServiceFields() {
+            const type = document.getElementById('serviceType').value;
+            document.querySelectorAll('.service-type-fields').forEach(f => f.classList.add('hidden'));
+            
+            const fieldMap = {
+                'HTTP': 'httpFields',
+                'MariaDB': 'mariadbFields',
+                'Telnet': 'telnetFields',
+                'Ping': 'pingFields',
+                'BackgroundService': 'bgServiceFields'
+            };
+            
+            if (fieldMap[type]) {
+                document.getElementById(fieldMap[type]).classList.remove('hidden');
+            }
+        }
+
+        // Modal functions
+        function openAddServiceModal() {
+            document.getElementById('modalTitle').textContent = 'Add Service';
+            document.getElementById('serviceForm').reset();
+            document.getElementById('editingService').value = '';
+            document.getElementById('serviceEnabled').checked = true;
+            document.getElementById('servicePrioritized').checked = false;
+            updateServiceFields();
+            document.getElementById('serviceModal').classList.add('show');
+        }
+
+        function closeModal() {
+            document.getElementById('serviceModal').classList.remove('show');
+        }
+
+        async function editService(name) {
+            try {
+                const response = await fetch(`${API_BASE}/services`);
+                const services = await response.json();
+                const service = services.find(s => s.name === name);
+                
+                if (!service) {
+                    showAlert('Service not found', 'danger');
+                    return;
+                }
+
+                document.getElementById('modalTitle').textContent = 'Edit Service';
+                document.getElementById('editingService').value = name;
+                document.getElementById('serviceName').value = service.name;
+                document.getElementById('displayName').value = service.displayName || '';
+                document.getElementById('serviceType').value = service.type;
+                document.getElementById('serviceEnabled').checked = service.enabled;
+                document.getElementById('servicePrioritized').checked = service.prioritized || false;
+                
+                updateServiceFields();
+
+                // Fill type-specific fields
+                const config = service.config || {};
+                
+                if (service.type === 'HTTP') {
+                    document.getElementById('httpUrl').value = config.url || '';
+                    document.getElementById('httpExpectedStatus').value = config.expectedStatusCode || 200;
+                    document.getElementById('httpTimeout').value = config.timeoutSeconds || 10;
+                } else if (service.type === 'MariaDB') {
+                    document.getElementById('dbConnectionString').value = config.connectionString || '';
+                } else if (service.type === 'Telnet') {
+                    document.getElementById('telnetHost').value = config.host || '';
+                    document.getElementById('telnetPort').value = config.port || 80;
+                    document.getElementById('telnetTimeout').value = config.timeoutSeconds || 5;
+                } else if (service.type === 'Ping') {
+                    document.getElementById('pingHost').value = config.host || '';
+                    document.getElementById('pingTimeout').value = config.timeoutMs || 1000;
+                    document.getElementById('pingCount').value = config.pingCount || 3;
+                } else if (service.type === 'BackgroundService') {
+                    document.getElementById('bgServiceName').value = config.serviceName || '';
+                }
+
+                document.getElementById('checkInterval').value = config.checkIntervalSeconds || 30;
+                document.getElementById('criticalAfter').value = config.criticalAfterFailures || 3;
+
+                document.getElementById('serviceModal').classList.add('show');
+            } catch (error) {
+                showAlert('Failed to load service: ' + error.message, 'danger');
+            }
+        }
+
+        async function saveService() {
+            const editingService = document.getElementById('editingService').value;
+            const type = document.getElementById('serviceType').value;
+            
+            const serviceData = {
+                name: document.getElementById('serviceName').value,
+                displayName: document.getElementById('displayName').value || document.getElementById('serviceName').value,
+                type: type,
+                enabled: document.getElementById('serviceEnabled').checked,
+                prioritized: document.getElementById('servicePrioritized').checked,
+                config: {
+                    checkIntervalSeconds: parseInt(document.getElementById('checkInterval').value),
+                    criticalAfterFailures: parseInt(document.getElementById('criticalAfter').value)
+                }
+            };
+
+            // Add type-specific config
+            if (type === 'HTTP') {
+                serviceData.config.url = document.getElementById('httpUrl').value;
+                serviceData.config.expectedStatusCode = parseInt(document.getElementById('httpExpectedStatus').value);
+                serviceData.config.timeoutSeconds = parseInt(document.getElementById('httpTimeout').value);
+            } else if (type === 'MariaDB') {
+                serviceData.config.connectionString = document.getElementById('dbConnectionString').value;
+            } else if (type === 'Telnet') {
+                serviceData.config.host = document.getElementById('telnetHost').value;
+                serviceData.config.port = parseInt(document.getElementById('telnetPort').value);
+                serviceData.config.timeoutSeconds = parseInt(document.getElementById('telnetTimeout').value);
+            } else if (type === 'Ping') {
+                serviceData.config.host = document.getElementById('pingHost').value;
+                serviceData.config.timeoutMs = parseInt(document.getElementById('pingTimeout').value);
+                serviceData.config.pingCount = parseInt(document.getElementById('pingCount').value);
+            } else if (type === 'BackgroundService') {
+                serviceData.config.serviceName = document.getElementById('bgServiceName').value;
+            }
+
+            try {
+                const url = editingService 
+                    ? `${API_BASE}/services/${encodeURIComponent(editingService)}`
+                    : `${API_BASE}/services`;
+                const method = editingService ? 'PUT' : 'POST';
+
+                const response = await fetch(url, {
+                    method: method,
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(serviceData)
+                });
+
+                const result = await response.json();
+                
+                if (response.ok) {
+                    showAlert(result.message, 'warning');
+                    closeModal();
+                    loadServices();
+                } else {
+                    showAlert(result.error || 'Failed to save service', 'danger');
+                }
+            } catch (error) {
+                showAlert('Failed to save service: ' + error.message, 'danger');
+            }
+        }
+
+        async function deleteService(name) {
+            if (!confirm(`Are you sure you want to delete "${name}"?`)) {
+                return;
+            }
+
+            try {
+                const response = await fetch(`${API_BASE}/services/${encodeURIComponent(name)}`, {
+                    method: 'DELETE'
+                });
+
+                const result = await response.json();
+                
+                if (response.ok) {
+                    showAlert(result.message, 'warning');
+                    loadServices();
+                } else {
+                    showAlert(result.error || 'Failed to delete service', 'danger');
+                }
+            } catch (error) {
+                showAlert('Failed to delete service: ' + error.message, 'danger');
+            }
+        }
+
+        // Notifications
+        async function loadNotifications() {
+            try {
+                const response = await fetch('/api/config/notifications');
+                const config = await response.json();
+                
+                document.getElementById('emailEnabled').checked = config.emailEnabled;
+                document.getElementById('emailTo').value = config.emailTo || '';
+                document.getElementById('emailSubjectPrefix').value = config.emailSubjectPrefix || '[Watchdog]';
+                document.getElementById('webhookEnabled').checked = config.webhookEnabled;
+                document.getElementById('webhookUrl').value = config.webhookUrl || '';
+                document.getElementById('webhookType').value = config.webhookType || 'Generic';
+            } catch (error) {
+                showAlert('Failed to load notifications: ' + error.message, 'danger');
+            }
+        }
+
+        async function saveNotifications() {
+            const data = {
+                emailEnabled: document.getElementById('emailEnabled').checked,
+                emailTo: document.getElementById('emailTo').value,
+                emailSubjectPrefix: document.getElementById('emailSubjectPrefix').value,
+                webhookEnabled: document.getElementById('webhookEnabled').checked,
+                webhookUrl: document.getElementById('webhookUrl').value,
+                webhookType: document.getElementById('webhookType').value
+            };
+
+            try {
+                const response = await fetch('/api/config/notifications', {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data)
+                });
+
+                const result = await response.json();
+                
+                if (response.ok) {
+                    showAlert(result.message, 'warning');
+                } else {
+                    showAlert(result.error || 'Failed to save notifications', 'danger');
+                }
+            } catch (error) {
+                showAlert('Failed to save notifications: ' + error.message, 'danger');
+            }
+        }
+
+        // General settings
+        async function loadGeneralSettings() {
+            try {
+                const response = await fetch('/api/config/settings');
+                const settings = await response.json();
+                
+                document.getElementById('defaultCheckInterval').value = settings.defaultCheckIntervalSeconds;
+                document.getElementById('defaultCriticalAfter').value = settings.defaultCriticalAfterFailures;
+                document.getElementById('historyRetention').value = settings.historyRetentionDays;
+            } catch (error) {
+                showAlert('Failed to load settings: ' + error.message, 'danger');
+            }
+        }
+
+        async function saveGeneralSettings() {
+            const data = {
+                defaultCheckIntervalSeconds: parseInt(document.getElementById('defaultCheckInterval').value),
+                defaultCriticalAfterFailures: parseInt(document.getElementById('defaultCriticalAfter').value),
+                historyRetentionDays: parseInt(document.getElementById('historyRetention').value)
+            };
+
+            try {
+                const response = await fetch('/api/config/settings', {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data)
+                });
+
+                const result = await response.json();
+                
+                if (response.ok) {
+                    showAlert(result.message, 'warning');
+                } else {
+                    showAlert(result.error || 'Failed to save settings', 'danger');
+                }
+            } catch (error) {
+                showAlert('Failed to save settings: ' + error.message, 'danger');
+            }
+        }
+
+        // Export/Import
+        async function exportConfig() {
+            try {
+                const response = await fetch('/api/config/export');
+                const json = await response.text();
+                
+                const blob = new Blob([json], { type: 'application/json' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `watchdog-config-${new Date().toISOString().split('T')[0]}.json`;
+                a.click();
+                URL.revokeObjectURL(url);
+                
+                showAlert('Configuration exported successfully', 'success');
+            } catch (error) {
+                showAlert('Failed to export configuration: ' + error.message, 'danger');
+            }
+        }
+
+        async function importConfig() {
+            const fileInput = document.getElementById('importFile');
+            if (!fileInput.files.length) {
+                showAlert('Please select a file to import', 'warning');
+                return;
+            }
+
+            if (!confirm('This will replace your current configuration. Are you sure?')) {
+                return;
+            }
+
+            try {
+                const file = fileInput.files[0];
+                const text = await file.text();
+                
+                // Validate JSON
+                JSON.parse(text);
+
+                const response = await fetch('/api/config/import', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: text
+                });
+
+                const result = await response.json();
+                
+                if (response.ok) {
+                    showAlert(result.message, 'warning');
+                    loadServices();
+                    loadNotifications();
+                    loadGeneralSettings();
+                } else {
+                    showAlert(result.error || 'Failed to import configuration', 'danger');
+                }
+            } catch (error) {
+                showAlert('Failed to import configuration: ' + error.message, 'danger');
+            }
+        }
+
+        // Close modal on escape key
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') closeModal();
+        });
+
+        // Close modal on backdrop click
+        document.getElementById('serviceModal').addEventListener('click', (e) => {
+            if (e.target.classList.contains('modal')) closeModal();
+        });
+
+        // ========================================
+        // Authentication
+        // ========================================
+        const ACCESS_CODE = '9009';
+        const SESSION_KEY = 'watchdog_settings_auth';
+        const SESSION_DURATION = 30 * 60 * 1000; // 30 minutes
+
+        function checkStoredAuth() {
+            const stored = sessionStorage.getItem(SESSION_KEY);
+            if (stored) {
+                const data = JSON.parse(stored);
+                if (Date.now() - data.timestamp < SESSION_DURATION) {
+                    showApp();
+                    return true;
+                }
+                sessionStorage.removeItem(SESSION_KEY);
+            }
+            return false;
+        }
+
+        function checkAccess() {
+            const input = document.getElementById('accessCode');
+            const error = document.getElementById('loginError');
+            
+            if (input.value === ACCESS_CODE) {
+                sessionStorage.setItem(SESSION_KEY, JSON.stringify({
+                    timestamp: Date.now()
+                }));
+                showApp();
+            } else {
+                error.classList.add('show');
+                input.value = '';
+                input.focus();
+                setTimeout(() => error.classList.remove('show'), 3000);
+            }
+        }
+
+        function showApp() {
+            document.getElementById('loginOverlay').classList.add('hidden');
+            document.getElementById('appContent').classList.add('authenticated');
+            loadServices();
+            loadNotifications();
+            loadGeneralSettings();
+        }
+
+        function logout() {
+            sessionStorage.removeItem(SESSION_KEY);
+            document.getElementById('appContent').classList.remove('authenticated');
+            document.getElementById('loginOverlay').classList.remove('hidden');
+            document.getElementById('accessCode').value = '';
+        }
+
+        // Check auth on page load
+        document.addEventListener('DOMContentLoaded', () => {
+            if (!checkStoredAuth()) {
+                document.getElementById('accessCode').focus();
+            }
+        });
+
+        // Handle Enter key on login
+        document.getElementById('accessCode').addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') checkAccess();
+        });
+    </script>
+</body>
+</html>
+

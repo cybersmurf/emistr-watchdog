@@ -1,0 +1,203 @@
+/* Emistr Watchdog - Settings Page Specific Styles */
+
+/* Login Overlay */
+.login-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: var(--bg-primary);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 9999;
+}
+
+.login-overlay.hidden {
+    display: none;
+}
+
+.login-box {
+    background: var(--bg-card);
+    padding: 3rem;
+    border-radius: 12px;
+    text-align: center;
+    max-width: 400px;
+    width: 90%;
+    border: 1px solid var(--border-color);
+}
+
+.login-box h2 {
+    margin-bottom: 0.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+}
+
+.login-box p {
+    color: var(--text-secondary);
+    margin-bottom: 2rem;
+}
+
+.login-box .lock-icon {
+    font-size: 3rem;
+    margin-bottom: 1rem;
+}
+
+.login-box input {
+    font-size: 1.5rem;
+    text-align: center;
+    letter-spacing: 0.5rem;
+}
+
+.login-box input::placeholder {
+    letter-spacing: normal;
+    font-size: 1rem;
+}
+
+.login-box .btn {
+    width: 100%;
+    padding: 1rem;
+    font-size: 1rem;
+}
+
+.login-error {
+    color: var(--danger);
+    margin-top: 1rem;
+    display: none;
+}
+
+.login-error.show {
+    display: block;
+}
+
+/* App content wrapper */
+.app-content {
+    display: none;
+}
+
+.app-content.authenticated {
+    display: block;
+}
+
+/* Logout button */
+.logout-btn {
+    background: transparent;
+    border: 1px solid var(--danger);
+    color: var(--danger);
+    padding: 0.5rem 1rem;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 0.875rem;
+    transition: all 0.2s;
+}
+
+.logout-btn:hover {
+    background: var(--danger);
+    color: white;
+}
+
+/* Service cards in settings */
+.services-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 1rem;
+}
+
+.service-card {
+    background: var(--bg-card);
+    border-radius: 8px;
+    padding: 1rem;
+    border: 1px solid var(--border-color);
+}
+
+.service-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.75rem;
+}
+
+.service-name {
+    font-weight: 600;
+}
+
+.service-type {
+    color: var(--text-secondary);
+    font-size: 0.875rem;
+}
+
+/* Form sections */
+.form-section {
+    background: var(--bg-card);
+    border-radius: 12px;
+    padding: 1.5rem;
+    margin-bottom: 1.5rem;
+    border: 1px solid var(--border-color);
+}
+
+.form-section-title {
+    font-size: 1.1rem;
+    font-weight: 600;
+    margin-bottom: 1rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.form-row {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1rem;
+    margin-bottom: 1rem;
+}
+
+/* Export/Import section */
+.export-section {
+    display: flex;
+    gap: 1rem;
+    flex-wrap: wrap;
+}
+
+.config-preview {
+    background: var(--bg-input);
+    border-radius: 8px;
+    padding: 1rem;
+    font-family: 'Consolas', 'Monaco', monospace;
+    font-size: 0.85rem;
+    max-height: 400px;
+    overflow: auto;
+    white-space: pre-wrap;
+    word-break: break-all;
+}
+
+/* Global alert */
+#globalAlert {
+    position: fixed;
+    top: 80px;
+    right: 20px;
+    z-index: 1001;
+    min-width: 300px;
+}
+
+/* Prioritized service styling */
+.service-item.prioritized {
+    border-left: 3px solid gold;
+}
+
+.status-badge.prioritized {
+    background: rgba(255, 215, 0, 0.2);
+    color: gold;
+}
+
+.btn-warning {
+    background: rgba(255, 215, 0, 0.3);
+    color: gold;
+    border: 1px solid gold;
+}
+
+.btn-warning:hover {
+    background: rgba(255, 215, 0, 0.5);
+}
+
