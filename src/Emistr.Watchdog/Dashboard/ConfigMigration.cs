@@ -355,7 +355,7 @@ public static class ConfigMigration
         return new ServiceRestartConfig
         {
             Enabled = GetBool(rc, "Enabled", false),
-            WindowsServiceName = GetString(rc, "WindowsServiceName"),
+            WindowsServiceName = GetString(rc, "WindowsServiceName") ?? string.Empty,
             MaxRestartAttempts = GetInt(rc, "MaxRestartAttempts", 3),
             RestartDelaySeconds = GetInt(rc, "RestartDelaySeconds", 30),
             RestartOnCritical = GetBool(rc, "RestartOnCritical", true)
@@ -364,5 +364,3 @@ public static class ConfigMigration
 
     #endregion
 }
-
-
