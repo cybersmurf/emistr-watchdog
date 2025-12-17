@@ -429,7 +429,7 @@ public static class ConfigurationEndpointsV2
             Url = GetStringProperty(v1Config, "Url"),
             Host = GetStringProperty(v1Config, "Host"),
             Port = GetIntProperty(v1Config, "Port", 0),
-            ExpectedStatusCodes = GetIntArrayProperty(v1Config, "ExpectedStatusCodes"),
+            ExpectedStatusCodes = GetIntArrayProperty(v1Config, "ExpectedStatusCodes") ?? [200],
             ValidateSsl = GetBoolProperty(v1Config, "ValidateSsl", true),
             DatabaseName = GetStringProperty(v1Config, "DatabaseName"),
             TableName = GetStringProperty(v1Config, "TableName"),
@@ -500,7 +500,7 @@ public static class ConfigurationEndpointsV2
 
         var service = services.FirstOrDefault(s => 
             s.TryGetValue("Name", out var n) && 
-            n?.ToString()?.Equals(name, StringComparison.OrdinalIgnoreCase) == true);
+            n.ToString()?.Equals(name, StringComparison.OrdinalIgnoreCase) == true);
 
         if (service != null)
         {
@@ -533,4 +533,3 @@ public static class ConfigurationEndpointsV2
 
 public record PriorityDto(bool Prioritized);
 public record EnabledDto(bool Enabled);
-
